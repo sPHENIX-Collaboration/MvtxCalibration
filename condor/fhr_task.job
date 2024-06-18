@@ -1,0 +1,10 @@
+Universe           = vanilla
+initialDir         = /sphenix/user/tmengel/MVTX/mvtx-fhr/condor
+Executable         = $(initialDir)/run_fhr_task.sh
+PeriodicHold       = (NumJobStarts>=1 && JobStatus == 1)
+request_memory     = 6GB
+Priority           = 20
+Output             = $(initialDir)/log/condor-mvtx-fhr-$INT(Process,%05d).out
+Error              = $(initialDir)/log/condor-mvtx-fhr-$INT(Process,%05d).err
+Log                = /tmp/condor-mvtx-fhr-$ENV(USER)-$INT(Process).log
+Queue 1
