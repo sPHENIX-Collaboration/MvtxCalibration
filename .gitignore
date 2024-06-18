@@ -94,3 +94,5 @@ tmtags
 
 # dev directory
 dev/*
+*.err
+*.out
