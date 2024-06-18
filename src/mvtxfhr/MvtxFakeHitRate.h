@@ -69,7 +69,7 @@ class MvtxFakeHitRate : public SubsysReco
         int FillCurrentMaskTree();
         int CalcFHR();
 
-        double calc_threshold(unsigned int nhits, int nmasked);
+        double calc_threshold(unsigned int nhits);
         
         
 };

@@ -144,7 +144,7 @@ int MvtxFakeHitRate::FillCurrentMaskTree()
         nhits -= nmasked_hits;
     }
 
-    m_current_threshold = calc_threshold(nhits, m_current_nmasked);
+    m_current_threshold = calc_threshold(nhits);
     std::cout << "MvtxFakeHitRate::FillCurrentMaskTree - nmasked: " << m_current_nmasked << " threshold: " << m_current_threshold << std::endl;
 
     m_current_mask->Fill();
@@ -152,12 +152,13 @@ int MvtxFakeHitRate::FillCurrentMaskTree()
     return Fun4AllReturnCodes::EVENT_OK;
 }
 
-double MvtxFakeHitRate::calc_threshold(unsigned int nhits, int nmasked)
+double MvtxFakeHitRate::calc_threshold(unsigned int nhits)
 {
     // Calculate the noise threshold
     if(nhits == 0) { return 0.0; }
     double npixels = 1.0*512*1024*9*48;
-    npixels -= 1.0*nmasked;
+    
+    // npixels -= 1.0*nmasked;
     double denom = npixels*m_num_strobes;
     if(denom == 0) { return 0.0; }
     return (1.0*nhits)/denom;
@@ -189,7 +190,7 @@ int MvtxFakeHitRate::CalcFHR()
     {
         nhits += it->second;
     }
-    m_noise_threshold = calc_threshold(nhits, 0);
+    m_noise_threshold = calc_threshold(nhits);
     m_threshold_vs_nmasked->Fill(0.0, m_noise_threshold);
     m_tree->Fill();
 
@@ -216,7 +217,7 @@ int MvtxFakeHitRate::CalcFHR()
            ipixel++;
         }
 
-        m_noise_threshold = calc_threshold(1.0*nhits, m_num_masked_pixels);
+        m_noise_threshold = calc_threshold(1.0*nhits);
 
         m_threshold_vs_nmasked->Fill(m_num_masked_pixels, m_noise_threshold);
         std::cout << "MvtxFakeHitRate::CalcFHR - nmasked: " << m_num_masked_pixels << " threshold: " << m_noise_threshold << std::endl;
