@@ -1,5 +1,5 @@
 Universe           = vanilla
-initialDir         = /sphenix/user/tmengel/MVTX/mvtx-fhr/condor
+initialDir         = /sphenix/user/tmengel/MVTX/MvtxCalibration
 Executable         = $(initialDir)/run_fhr_task.sh
 PeriodicHold       = (NumJobStarts>=1 && JobStatus == 1)
 request_memory     = 6GB
