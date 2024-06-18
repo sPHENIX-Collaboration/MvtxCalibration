@@ -32,7 +32,7 @@ class MvtxFakeHitRate : public SubsysReco
         int End(PHCompositeNode*) override;
         
         void SetOutputfile(const std::string& name) { m_outputfile = name;}
-        void SetMaxMaskedPixels(int n) { m_num_masked_pixels = n; }
+        void SetMaxMaskedPixels(int n) { m_max_masked_pixels = n; }
         
 
     private:

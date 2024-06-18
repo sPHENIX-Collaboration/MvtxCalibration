@@ -49,7 +49,7 @@ if [ -f "fhr_task.job" ]; then
 fi 
 echo "Creating fhr_task.job"
 echo "Universe           = vanilla" > fhr_task.job
-echo "initialDir         = $CURRENTDIR" >> fhr_task.job
+echo "initialDir         = ${CURRENTDIR}/condor" >> fhr_task.job
 echo "Executable         = \$(initialDir)/run_fhr_task.sh" >> fhr_task.job
 echo "PeriodicHold       = (NumJobStarts>=1 && JobStatus == 1)" >> fhr_task.job
 echo "request_memory     = 6GB" >> fhr_task.job
