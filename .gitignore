@@ -96,3 +96,6 @@ tmtags
 dev/*
 *.err
 *.out
+
+install/*
+install
