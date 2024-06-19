@@ -9,20 +9,32 @@ There is an included script called `BuildAll.sh` which will build all the module
 export $MYINSTALL=<your install directory path>
 source BuildAll.sh $MYINSTALL
 ```
-If no path for install directory is supplied, script will default to installing in `MvtxCalibration/install`.  The `BuildAll.sh` will do the following things:
+
+If no path for install directory is supplied, script will default to installing in `MvtxCalibration/install`. 
+
+The `BuildAll.sh` will do the following things:
 1. Make and install `mvtxfhr` and `rawdatatools` in provided install directory (default is `MvtxCalibration/install`.
+
 2. Create `MvtxCalibration/condor` directory with scripts to submit condor jobs of analysis on RCF
-- `fhr_task.job`: Condor job script that calls exicutible and pipes in arguments from `args.list`.
-	**Check that this file has the correct `initialDir`.** For example mine is:
-     		```bash
-			initialDir         = /sphenix/user/tmengel/MVTX/MvtxCalibration
-		```
- - `run_fhr_task.job`: Exicutible file that sources install directory and calls `Fun4All_MvtxFHR.C`
-   	**Check that this file has the correct `$INSTALLDIR`.** It should be the path supplied to `BuildAll.sh`.
-- `args.list`: List file that contains arguments for each condor job. The arguments are
-  	`<number of events>` `<run number>` `<trigger rate [kHz]>` `<output file path>` `<trigger guard output (optional could be "none")>`
-  	** Check the output path for root files and make sure it leads to `MvtxCalibration/rootfiles`
-- The `BuildAll.sh` should also create a sub-directory within your condor directory called `MvtxCalibration/condor/log`. This is where the .err and .out files from the condor job will live after you submit it.
+	- `fhr_task.job`: Condor job script that calls exicutible and pipes in arguments from `args.list`.
+
+   		**Check that this file has the correct `initialDir`.** For example mine is:
+     			```bash
+				initialDir         = /sphenix/user/tmengel/MVTX/MvtxCalibration
+			```
+ 
+ 	- `run_fhr_task.job`: Exicutible file that sources install directory and calls `Fun4All_MvtxFHR.C`.
+
+    		**Check that this file has the correct `$INSTALLDIR`.** It should be the path supplied to `BuildAll.sh`.
+	
+ 	- `args.list`: List file that contains arguments for each condor job. The arguments are
+
+    		`<number of events>` `<run number>` `<trigger rate [kHz]>` `<output file path>` `<trigger guard output (optional could be "none")>`
+
+    		** Check the output path for root files and make sure it leads to `MvtxCalibration/rootfiles`**
+	
+ 	- The `BuildAll.sh` should also create a sub-directory within your condor directory called `MvtxCalibration/condor/log`. This is where the .err and .out files from the condor job will live after you submit it.
+
 3. Create `MvtxCalibration/rootfiles` where output is saved from condor jobs.
    
 
