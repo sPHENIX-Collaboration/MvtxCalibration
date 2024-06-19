@@ -17,8 +17,8 @@ The `BuildAll.sh` will do the following things:
 
 2. Create `MvtxCalibration/condor` directory with scripts to submit condor jobs of analysis on RCF
 	- `fhr_task.job`: Condor job script that calls exicutible and pipes in arguments from `args.list`.
-
-   		**Check that this file has the correct `initialDir`.** For example mine is:
+	
+ **Check that this file has the correct `initialDir`.** For example mine is:
      			```bash
 				initialDir         = /sphenix/user/tmengel/MVTX/MvtxCalibration
 			```
