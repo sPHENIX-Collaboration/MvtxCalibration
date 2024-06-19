@@ -38,8 +38,8 @@ void Fun4All_MvtxFHR(const int nEvents = 100000,
                      const int run_number = 42641,
                      const int trigger_rate_kHz = 44,
                      const std::string &output_name = "output.root",
-                     const std::string &trigger_guard_output_name = "",
-                     const int target_layer = 1
+                     const int target_layer = -1,
+                     const std::string &trigger_guard_output_name = ""
                     )
 {  
     

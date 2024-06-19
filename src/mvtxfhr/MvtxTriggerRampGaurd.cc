@@ -10,6 +10,7 @@
 
 #include <ffarawobjects/MvtxRawEvtHeader.h>
 #include <ffarawobjects/MvtxRawEvtHeaderv1.h>
+#include <ffarawobjects/MvtxRawEvtHeaderv2.h>
 #include <ffarawobjects/MvtxRawHit.h>
 #include <ffarawobjects/MvtxRawHitv1.h>
 #include <ffarawobjects/MvtxRawHitContainer.h>
@@ -70,7 +71,7 @@ int MvtxTriggerRampGaurd::process_event(PHCompositeNode *topNode)
     if(m_is_past_trigger_ramp && !m_debug_mode){ return Fun4AllReturnCodes::EVENT_OK; }
 
     // get dst nodes
-    MvtxRawEvtHeaderv1 * m_mvtx_raw_event_header = findNode::getClass<MvtxRawEvtHeaderv1>(topNode, "MVTXRAWEVTHEADER");
+    MvtxRawEvtHeaderv2 * m_mvtx_raw_event_header = findNode::getClass<MvtxRawEvtHeaderv2>(topNode, "MVTXRAWEVTHEADER");
     if(!m_mvtx_raw_event_header){ std::cout << PHWHERE << "::" << __func__ << ": Could not get MVTXRAWEVTHEADER from Node Tree" << std::endl; exit(1); }
 
     MvtxRawHitContainerv1 *m_mvtx_raw_hit_container = findNode::getClass<MvtxRawHitContainerv1>(topNode, "MVTXRAWHIT");

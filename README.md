@@ -183,14 +183,38 @@ The fake hit rate analysis is run using the `Fun4All_MvtxFHR.C` macro in the `Mv
 - `run_number` : Run number of the data
 - `trigger_rate_kHz` : Trigger rate in kHz
 - `output_name` : Output file name
+- `selected_layer` : Selected layer to analyze (optional, -1 for all layers)
 - `trigger_guard_output_name` : Output file name for trigger guard analysis (optional) 
 
 The macro can be run using the following command:
 
 ```bash
-root -l -b -q 'Fun4All_MvtxFHR.C(10000, 42641, 44, "output.root", "trigger_guard_output.root")'
+root -l -b -q 'Fun4All_MvtxFHR.C(10000, 42641, 44, "output.root", "-1", "trigger_guard_output.root")'
 ```
 
 The macro will initialze a Fun4All server,  then load raw MVTX data files for the given run number using the `RawDataManager` class. The macro will then create a `MvtxFakeHitRate` object and set the output file name and the maximum number of pixels to mask. The macro will then run the fake hit rate analysis and save the results to the output file. The output file will contain the fake hit rate and the optimized pixel mask.
+
+## Generating Pixel Masks
+
+To generate a json file with the pixel mask, you can use the `MakeJsonHotPixelMap.C` macro in the `MvtxCalibration/macros` directory. This macro will read the output file from the fake hit rate analysis and generate a json file with the pixel mask. The macro takes the following arguments:
+
+- `calibration_file` : Output file from the fake hit rate analysis
+- `target_threshold` : Target threshold for fake hit rate
+
+The macro can be run using the following command:
+
+```bash
+root -l -b -q 'MakeJsonHotPixelMap.C("output.root", 10e-8)'
+```
+
+The macro will read the output file from the fake hit rate analysis and generate a json file with the pixel mask. The json file will contain the pixel mask and the fake hit rate for each pixel. The macro will also print the number of pixels masked and the fake hit rate threshold.
+
+
+## Questions
+
+This is a work in progress and likely has some bugs. If you have any questions or need help, please contact me at
+` <tmengel@vols.utk.edu>`.
+```
+
 
 
