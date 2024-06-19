@@ -254,7 +254,7 @@ int MvtxFakeHitRate::End(PHCompositeNode * /*topNode*/)
     m_tree->Write();
     m_current_mask->Write();
     m_threshold_vs_nmasked->Write();
-    PHTFileServer::get().write(m_outputfile);
+    // PHTFileServer::get().write(m_outputfile);
     return Fun4AllReturnCodes::EVENT_OK;
 
 }

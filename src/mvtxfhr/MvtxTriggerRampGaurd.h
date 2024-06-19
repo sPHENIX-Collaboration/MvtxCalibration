@@ -12,6 +12,7 @@
 #include <memory>
 
 #include <TH1.h>
+#include <TTree.h>
 
 
 class PHCompositeNode;
@@ -21,7 +22,7 @@ class MvtxTriggerRampGaurd : public SubsysReco
     public:
 
         MvtxTriggerRampGaurd(const std::string& name = "MvtxTriggerRampGaurd") : SubsysReco(name) {}
-        ~MvtxTriggerRampGaurd() override;
+        ~MvtxTriggerRampGaurd() override {}
 
         // standard Fun4All functions
         int InitRun(PHCompositeNode*) override;
@@ -29,9 +30,9 @@ class MvtxTriggerRampGaurd : public SubsysReco
         int End(PHCompositeNode*) override;
 
         void SaveOutput(const std::string & filename) { m_output_filename = filename; }
-
         void SetTriggerRate(double rate) { m_trigger_rate = rate; }
-       
+        void SetConcurrentStrobeTarget(int target) { m_concurrent_strobe_target = target; }
+
     private:
 
         std::string m_output_filename{""};
@@ -39,6 +40,7 @@ class MvtxTriggerRampGaurd : public SubsysReco
         uint64_t m_last_strobe_bco{0};
         uint64_t m_current_strobe_bco{0};
         uint64_t m_delta_strobe_bco{0};
+        
 
         double m_strobe_length{0.0};
         double m_trigger_rate{101000.0}; // 101 kHz
@@ -52,7 +54,11 @@ class MvtxTriggerRampGaurd : public SubsysReco
 
         bool m_is_past_trigger_ramp{false};
 
+        bool m_debug_mode{false};
         TH1 * m_h_strobe_delta_bco{nullptr};
+        TH1 * m_h_strobe_delta_bco_with_guard{nullptr};
+        TTree * m_tree{nullptr};
+        double m_delta_strobe_bco_dlb{0.0};
 };
 
 #endif
