@@ -33,6 +33,7 @@ class MvtxFakeHitRate : public SubsysReco
         
         void SetOutputfile(const std::string& name) { m_outputfile = name;}
         void SetMaxMaskedPixels(int n) { m_max_masked_pixels = n; }
+        void SelectLayer(int layer = 0) { m_target_layer = layer; }
         
 
     private:
@@ -43,6 +44,9 @@ class MvtxFakeHitRate : public SubsysReco
         int m_max_masked_pixels{1000};
         bool m_masked_pixels_in_file{false};
         uint64_t m_last_strobe{0};
+
+        int m_target_layer{-1};
+
         // mask hot pixels
         MvtxPixelMask * m_hot_pixel_mask{nullptr};
         
@@ -69,7 +73,7 @@ class MvtxFakeHitRate : public SubsysReco
         int FillCurrentMaskTree();
         int CalcFHR();
 
-        double calc_threshold(unsigned int nhits);
+        double calc_threshold(int nhits);
         
         
 };

@@ -13,6 +13,7 @@
 
 #include <ffarawobjects/MvtxRawEvtHeader.h>
 #include <ffarawobjects/MvtxRawEvtHeaderv1.h>
+#include <ffarawobjects/MvtxRawEvtHeaderv2.h>
 #include <ffarawobjects/MvtxRawHit.h>
 #include <ffarawobjects/MvtxRawHitv1.h>
 #include <ffarawobjects/MvtxRawHitContainer.h>
@@ -77,7 +78,7 @@ int MvtxFakeHitRate::InitRun(PHCompositeNode* /*topNode*/)
     m_current_mask->Branch("masked_pixels", &m_current_masked_pixels);
 
     // threshold vs nmasked histogram
-    m_threshold_vs_nmasked = new TH1D("threshold_vs_nmasked", "threshold_vs_nmasked", m_max_masked_pixels,0,1.0*m_max_masked_pixels);
+    m_threshold_vs_nmasked = new TH1D("threshold_vs_nmasked", "threshold_vs_nmasked", m_max_masked_pixels,0.5,(1.0*m_max_masked_pixels) + 0.5);
 
     m_num_strobes = 0;
     return Fun4AllReturnCodes::EVENT_OK;
@@ -87,7 +88,7 @@ int MvtxFakeHitRate::InitRun(PHCompositeNode* /*topNode*/)
 int MvtxFakeHitRate::get_nodes(PHCompositeNode* topNode)
 {
     // get dst nodes
-    m_mvtx_raw_event_header = findNode::getClass<MvtxRawEvtHeaderv1>(topNode, "MVTXRAWEVTHEADER");
+    m_mvtx_raw_event_header = findNode::getClass<MvtxRawEvtHeaderv2>(topNode, "MVTXRAWEVTHEADER");
     if(!m_mvtx_raw_event_header){ std::cout << PHWHERE << "::" << __func__ << ": Could not get MVTXRAWEVTHEADER from Node Tree" << std::endl; exit(1); }
     if (Verbosity() > 2) {  m_mvtx_raw_event_header->identify();  }
 
@@ -115,7 +116,11 @@ int MvtxFakeHitRate::process_event(PHCompositeNode *topNode)
         if (m_hot_pixel_mask->is_masked(mvtx_hit)){ m_masked_pixels_in_file = true; }
         // get the hit info
         uint64_t strobe = mvtx_hit->get_bco();
+        uint8_t layer = mvtx_hit->get_layer_id();
         if(strobe > m_last_strobe){ m_last_strobe = strobe; m_num_strobes++; }
+
+        // if we are only looking at a specific layer, skip the rest
+        if((m_target_layer >=0 && m_target_layer < 3) && (layer != m_target_layer)){ continue; }
         
         // generate pixel key
         MvtxPixelDefs::pixelkey this_pixelkey = MvtxPixelDefs::gen_pixelkey(mvtx_hit);
@@ -152,16 +157,14 @@ int MvtxFakeHitRate::FillCurrentMaskTree()
     return Fun4AllReturnCodes::EVENT_OK;
 }
 
-double MvtxFakeHitRate::calc_threshold(unsigned int nhits)
+double MvtxFakeHitRate::calc_threshold(int nhits)
 {
     // Calculate the noise threshold
     if(nhits == 0) { return 0.0; }
-    double npixels = 1.0*512*1024*9*48;
-    
-    // npixels -= 1.0*nmasked;
+    double npixels = 226492416.0;
     double denom = npixels*m_num_strobes;
     if(denom == 0) { return 0.0; }
-    return (1.0*nhits)/denom;
+    return (static_cast<double>(nhits)/denom);
 }
 
 int MvtxFakeHitRate::CalcFHR()
@@ -184,14 +187,14 @@ int MvtxFakeHitRate::CalcFHR()
 
 
     // get initial values
-    unsigned int nhits = 0;
+    unsigned int nhits_all = 0;
     m_masked_pixels.clear();
-    for(auto it = pixel_hit_vector.begin(); it != pixel_hit_vector.begin() + m_max_masked_pixels; ++it)
+    for(auto it = pixel_hit_vector.begin(); it != pixel_hit_vector.end(); ++it)
     {
-        nhits += it->second;
+        nhits_all += it->second;
     }
-    m_noise_threshold = calc_threshold(nhits);
-    m_threshold_vs_nmasked->Fill(0.0, m_noise_threshold);
+    m_noise_threshold = calc_threshold(nhits_all);
+    m_threshold_vs_nmasked->Fill(0.5, m_noise_threshold);
     m_tree->Fill();
 
 
@@ -201,7 +204,7 @@ int MvtxFakeHitRate::CalcFHR()
         m_masked_pixels.clear();
         m_num_masked_pixels = 0;
         int ipixel = 0;
-        nhits =0;
+        int nhits = nhits_all;
 
         for(auto it = pixel_hit_vector.begin(); it != pixel_hit_vector.end(); ++it)
         {
@@ -209,18 +212,18 @@ int MvtxFakeHitRate::CalcFHR()
            {
                m_masked_pixels.push_back(it->first);
                m_num_masked_pixels++;
-           }
-           else
-           {
-               nhits += it->second;
+               nhits -= it->second;
            }
            ipixel++;
         }
+        if(nhits < 0) { std::cout << "MvtxFakeHitRate::CalcFHR - Error: nhits < 0" << std::endl; nhits = 0; }
+        m_noise_threshold = calc_threshold(nhits);
 
-        m_noise_threshold = calc_threshold(1.0*nhits);
-
-        m_threshold_vs_nmasked->Fill(m_num_masked_pixels, m_noise_threshold);
-        std::cout << "MvtxFakeHitRate::CalcFHR - nmasked: " << m_num_masked_pixels << " threshold: " << m_noise_threshold << std::endl;
+        m_threshold_vs_nmasked->Fill(m_num_masked_pixels + 0.5 , m_noise_threshold);
+        if(m_num_masked_pixels%1000 == 0)
+        {
+            std::cout << "MvtxFakeHitRate::CalcFHR - nmasked: " << m_num_masked_pixels << " threshold: " << m_noise_threshold << std::endl;
+        }
         m_tree->Fill();
     }
 

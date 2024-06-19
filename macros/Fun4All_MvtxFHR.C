@@ -34,11 +34,12 @@ R__LOAD_LIBRARY(libffarawmodules.so)
 R__LOAD_LIBRARY(librawdatatools.so)
 R__LOAD_LIBRARY(libMvtxFHR.so)
 
-void Fun4All_MvtxFHR(const int nEvents = 10000,
+void Fun4All_MvtxFHR(const int nEvents = 100000,
                      const int run_number = 42641,
                      const int trigger_rate_kHz = 44,
                      const std::string &output_name = "output.root",
-                     const std::string &trigger_guard_output_name = ""
+                     const std::string &trigger_guard_output_name = "",
+                     const int target_layer = 1
                     )
 {  
     
@@ -108,7 +109,7 @@ void Fun4All_MvtxFHR(const int nEvents = 10000,
 
     MvtxTriggerRampGaurd *mtg = new MvtxTriggerRampGaurd();
     mtg->SetTriggerRate(trigger_rate_kHz*1000.0);
-    mtg->SetConcurrentStrobeTarget(1000);
+    mtg->SetConcurrentStrobeTarget(300);
     if(run_trigger_guard_debug)
     {
         mtg->SaveOutput(trigger_guard_output_name);
@@ -118,6 +119,7 @@ void Fun4All_MvtxFHR(const int nEvents = 10000,
     MvtxFakeHitRate *mfhr = new MvtxFakeHitRate();
     mfhr->SetOutputfile(output_name);
     mfhr->SetMaxMaskedPixels(100000);
+    mfhr->SelectLayer(target_layer);
     se->registerSubsystem(mfhr);
 
     se->run(nEvents);
