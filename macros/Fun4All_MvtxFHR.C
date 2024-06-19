@@ -8,16 +8,17 @@
 #include <fun4allraw/SingleGl1PoolInput.h>
 #include <fun4allraw/SingleMvtxPoolInput.h>
 
-#include <phool/recoConsts.h>
-#include <Trkr_Reco.C>
-#include <Trkr_RecoInit.C>
-
-#include <ffarawmodules/StreamingCheck.h>
-
 #include <ffamodules/CDBInterface.h>
 #include <ffamodules/FlagHandler.h>
 #include <ffamodules/HeadReco.h>
 #include <ffamodules/SyncReco.h>
+
+#include <ffarawmodules/StreamingCheck.h>
+
+#include <phool/recoConsts.h>
+
+#include <Trkr_Reco.C>
+#include <Trkr_RecoInit.C>
 
 #include <rawdatatools/RawDataManager.h>
 #include <rawdatatools/RawDataDefs.h>
@@ -30,16 +31,27 @@ R__LOAD_LIBRARY(libfun4all.so)
 R__LOAD_LIBRARY(libfun4allraw.so)
 R__LOAD_LIBRARY(libffamodules.so)
 R__LOAD_LIBRARY(libffarawmodules.so)
-
 R__LOAD_LIBRARY(librawdatatools.so)
 R__LOAD_LIBRARY(libMvtxFHR.so)
 
-void Fun4All_MvtxFHR(const int nEvents = -1,
-                    const int run_number = 42641
-                        )
+void Fun4All_MvtxFHR(const int nEvents = 10000,
+                     const int run_number = 42641,
+                     const int trigger_rate_kHz = 44,
+                     const std::string &output_name = "output.root",
+                     const std::string &trigger_guard_output_name = ""
+                    )
 {  
     
-    const std::string output_name = "fhr_calib"+std::to_string(run_number)+".root";
+
+    bool run_trigger_guard_debug = false;
+    if(trigger_guard_output_name != "")
+    {
+        run_trigger_guard_debug = true;
+    }
+
+    double trigger_rate = trigger_rate_kHz*1000.0;
+    // const std::string output_name = "rootifles/fhr_calib_"+std::to_string(run_number)+"_"+std::to_string(trigger_rate_kHz)+"kHz_" + std::to_string(nEvents) + ".root";
+    // const std::string output_name_triggerguard = "rootifles/trigger_guard_calib_"+std::to_string(run_number)+"_"+std::to_string(trigger_rate_kHz)+"kHz_" + std::to_string(nEvents) + ".root";
     const std::string run_type="calib";
 
     // raw data manager
@@ -91,9 +103,17 @@ void Fun4All_MvtxFHR(const int nEvents = -1,
     FlagHandler *flag = new FlagHandler();
     se->registerSubsystem(flag);
 
-    MvtxTriggerRampGaurd *mgc = new MvtxTriggerRampGaurd();
-    mgc->SetTriggerRate(44000.0);
-    se->registerSubsystem(mgc);
+    //==================================================
+    // Analysis modules
+
+    MvtxTriggerRampGaurd *mtg = new MvtxTriggerRampGaurd();
+    mtg->SetTriggerRate(trigger_rate_kHz*1000.0);
+    mtg->SetConcurrentStrobeTarget(1000);
+    if(run_trigger_guard_debug)
+    {
+        mtg->SaveOutput(trigger_guard_output_name);
+    }
+    se->registerSubsystem(mtg);
 
     MvtxFakeHitRate *mfhr = new MvtxFakeHitRate();
     mfhr->SetOutputfile(output_name);
