@@ -256,6 +256,14 @@ int MvtxFakeHitRate::End(PHCompositeNode * /*topNode*/)
     PHTFileServer::get().cd(m_outputfile);
     m_tree->Write();
     m_current_mask->Write();
+    m_threshold_vs_nmasked->GetXaxis()->SetNdivisions(505);
+    m_threshold_vs_nmasked->GetYaxis()->SetNdivisions(505);
+    m_threshold_vs_nmasked->GetXaxis()->SetTitle("Masked pixels");
+    m_threshold_vs_nmasked->GetYaxis()->SetTitle("(Active pix. / tot. pix.) per strobe");
+    m_threshold_vs_nmasked->SetFillColor(kRed);
+    m_threshold_vs_nmasked->SetLineColor(kRed);
+    m_threshold_vs_nmasked->SetMarkerColor(kRed);
+    m_threshold_vs_nmasked->Draw("PE1");
     m_threshold_vs_nmasked->Write();
     // PHTFileServer::get().write(m_outputfile);
     return Fun4AllReturnCodes::EVENT_OK;
