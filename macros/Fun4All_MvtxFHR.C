@@ -1,11 +1,11 @@
-#include <fun4all/Fun4AllDstOutputManager.h>
+//#include <fun4all/Fun4AllDstOutputManager.h>
 #include <fun4all/Fun4AllInputManager.h>
-#include <fun4all/Fun4AllOutputManager.h>
+//#include <fun4all/Fun4AllOutputManager.h>
 #include <fun4all/Fun4AllServer.h>
 
 #include <fun4allraw/Fun4AllStreamingInputManager.h>
 #include <fun4allraw/InputManagerType.h>
-#include <fun4allraw/SingleGl1PoolInput.h>
+//#include <fun4allraw/SingleGl1PoolInput.h>
 #include <fun4allraw/SingleMvtxPoolInput.h>
 
 #include <ffamodules/CDBInterface.h>
@@ -17,8 +17,9 @@
 
 #include <phool/recoConsts.h>
 
-#include <Trkr_Reco.C>
-#include <Trkr_RecoInit.C>
+#include <GlobalVariables.C>
+//#include <Trkr_Reco.C>
+//#include <Trkr_RecoInit.C>
 
 #include <rawdatatools/RawDataManager.h>
 #include <rawdatatools/RawDataDefs.h>
@@ -57,7 +58,8 @@ void Fun4All_MvtxFHR(const int nEvents = 100000,
 
     // raw data manager
     RawDataManager * rdm = new RawDataManager();
-    rdm->SetDataPath(RawDataDefs::SPHNXPRO_COMM);
+    rdm->SetDataPath("/sphenix/lustre01/sphnxpro/physics");
+    //rdm->SetDataPath(RawDataDefs::SPHNXPRO_COMM);
     rdm->SetRunNumber(run_number);
     rdm->SetRunType(run_type);
     rdm->SelectSubsystems({RawDataDefs::MVTX});
@@ -66,7 +68,7 @@ void Fun4All_MvtxFHR(const int nEvents = 100000,
 
     // Initialize fun4all
     Fun4AllServer *se = Fun4AllServer::instance();
-    se->Verbosity(0);
+    se->Verbosity(1);
 
     // Input manager
     recoConsts *rc = recoConsts::instance();
@@ -81,7 +83,10 @@ void Fun4All_MvtxFHR(const int nEvents = 100000,
     for(int iflx = 0; iflx < 6; iflx++)
     {
         SingleMvtxPoolInput  * mvtx_sngl = new SingleMvtxPoolInput("MVTX_FLX" + to_string(iflx));
+        mvtx_sngl->Verbosity(0);
         mvtx_sngl->SetBcoRange(10);
+        mvtx_sngl->SetNegativeBco(10);
+        mvtx_sngl->runMVTXstandalone();
         std::vector<std::string> mvtx_files = rdm->GetFiles(RawDataDefs::MVTX, RawDataDefs::get_channel_name(RawDataDefs::MVTX, iflx));
         std::cout << "Adding files for flx " << iflx << std::endl;
         for (const auto &infile : mvtx_files)
@@ -106,10 +111,9 @@ void Fun4All_MvtxFHR(const int nEvents = 100000,
 
     //==================================================
     // Analysis modules
-
     MvtxTriggerRampGaurd *mtg = new MvtxTriggerRampGaurd();
     mtg->SetTriggerRate(trigger_rate_kHz*1000.0);
-    mtg->SetConcurrentStrobeTarget(300);
+    mtg->SetConcurrentStrobeTarget(0);
     if(run_trigger_guard_debug)
     {
         mtg->SaveOutput(trigger_guard_output_name);
