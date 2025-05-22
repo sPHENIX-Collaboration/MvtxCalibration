@@ -44,7 +44,6 @@ class pixelParameters
 void MakeJsonHotPixelMap(const std::string & calibration_file="fhr_calib42641_100000.root",
                         const double target_threshold=10e-8)
 {
-
     std::cout << "MakeJsonHotPixelMap - Reading calibration file " << calibration_file << std::endl;
     TFile * f = new TFile(calibration_file.c_str(), "READ");
     TTree * t = dynamic_cast<TTree*>(f->Get("masked_pixels"));
@@ -88,19 +87,14 @@ void MakeJsonHotPixelMap(const std::string & calibration_file="fhr_calib42641_10
 
     std::cout << "Writing masked pixels to json file" << std::endl;
 
-    json pixel_info;
     json masked_pixels_file;
-    masked_pixels_file["num_masked_pixels"] = num_masked_pixels;
-    masked_pixels_file["noise_threshold"] = noise_threshold;
 
     for (auto& pixel : pixels_to_mask)
     {
-        pixel_info["layer"] = pixel.layer;
-        pixel_info["stave"] = pixel.stave;
-        pixel_info["chip"] = pixel.chip;
-        pixel_info["row"] = pixel.row;
-        pixel_info["col"] = pixel.column;
-        masked_pixels_file["masked_pixels"] += pixel_info;
+        std::stringstream stave_sw_name;
+        stave_sw_name << "L" << pixel.layer << "_" << std::setw(2) << std::setfill('0') << pixel.stave;
+        json pixel_info = json::array({pixel.column, pixel.row});
+        masked_pixels_file[stave_sw_name.str()][std::to_string(pixel.chip)] += pixel_info;
     }
 
     std::ofstream json_output("masked_pixels.json");
