@@ -4,8 +4,11 @@ import os
 import argparse
 import json
 import sys
+sys.path.insert(0, './packages')
+
 import numpy as np
 from matplotlib import pyplot as plt
+
 
 
 class ThresholdScan:
@@ -29,7 +32,8 @@ class ThresholdScan:
         for feeid in feeids:
             gbt_channel = feeids.index(feeid)
             print(f'Processing stave {staveid} feeid {feeid} gbt_channel {gbt_channel}')
-            thrmap_file = f'{data_directory}thr_map_{feeid}.dat'
+            # thrmap_file = f'{data_directory}thr_map_{feeid}.dat'
+            thrmap_file = f'{data_directory}Calib_00067472_0000_FEEID{feeid}_thrs.dat'
             fin = open(thrmap_file, 'r')
             thrdata = np.fromfile(fin, dtype=np.float32)
             for j in range(512):
@@ -114,7 +118,7 @@ class ThresholdScan:
         thrmap_fig.colorbar(ax_for_cb.images[0],format='%.0e',ax=thrmap_ax, label='Threshold (e$^-$)', orientation='vertical',
                             pad=0.01, fraction=0.05,aspect=5)
         thrmap_fig.savefig(outputfile, dpi=300)
-        plt.show()
+        # plt.show()
         if not self.verbose:
             plt.close(thrmap_fig)
 

@@ -76,7 +76,7 @@ struct rdh_t
   rdh_t() = default;
   ~rdh_t() = default;
 
-  void decode(uint8_t* rdh_ptr)
+  bool decode(uint8_t* rdh_ptr)
   {
    // FELIX header
     flxId         = *(reinterpret_cast<uint8_t*>(rdh_ptr + 23) ) & 0xFF;
@@ -97,7 +97,15 @@ struct rdh_t
     stopBit       = *(reinterpret_cast<uint8_t*>(rdh_ptr + 58) ) & 0xFF;
     priority      = *(reinterpret_cast<uint8_t*>(rdh_ptr + 59) ) & 0xFF;
     rdhGBTcounter = *(reinterpret_cast<uint16_t*>(rdh_ptr + 62) ) & 0xFFFF;
-    assert(rdhGBTcounter == 0x3);
+    // assert(rdhGBTcounter == 0x3);
+
+    // Check expected value.It not 0x3, return false and continue gracefully
+    if (rdhGBTcounter != 0x3)
+    {
+      std::cerr << "[RDH Decode Error] Expected rdhGBTcounter == 0x3, but got " << std::hex << rdhGBTcounter << std::dec << std::endl;
+      return false;
+    }
+    return true;
   }
 };
 
