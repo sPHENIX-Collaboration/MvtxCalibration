@@ -99,3 +99,9 @@ dev/*
 *.root
 install/*
 install
+
+# analysis directory
+**/condor_out/
+**/output/
+**/results/
+**/packages/

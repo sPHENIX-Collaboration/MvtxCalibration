@@ -1,0 +1,12 @@
+Universe           = vanilla
+Initialdir         = /sphenix/user/hjheng/sPHENIXRepo/MVTX/MvtxCalibration/threshold-tools/cpp
+Executable         = $(Initialdir)/run_decoder_condor.sh
+PeriodicHold       = (NumJobStarts>=1 && JobStatus == 1)
+request_memory     = 4GB
+Priority           = 20
+job_lease_duration = 3600
+Output             = $(Initialdir)/condor/condor_out/condor_$(prefix).out
+Error              = $(Initialdir)/condor/condor_out/condor_$(prefix).err
+Log                = /tmp/condorLog_hjheng_mvtxthrsana_$(prefix).log
+Arguments          = $(arg_p) $(datafile) $(feeid) $(prefix) 
+Queue arg_p, datafile, feeid, prefix from queue.list
