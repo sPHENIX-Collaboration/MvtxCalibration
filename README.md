@@ -1,5 +1,95 @@
 # MVTX Calibration
 
+## [New] Run2025 fast threshold scan
+The main analysis code for the Run2025 fast threshold scan is located in:
+```
+threshold-tools/cpp
+```
+
+0. Make sure that the raw threshold scan data files are available at SDCC. For example, run 72324 has the following files:
+	```
+	/sphenix/lustre01/sphnxpro/physics/MVTX/calib/calib_mvtx0-00072324-0000.evt
+	/sphenix/lustre01/sphnxpro/physics/MVTX/calib/calib_mvtx1-00072324-0000.evt
+	/sphenix/lustre01/sphnxpro/physics/MVTX/calib/calib_mvtx2-00072324-0000.evt
+	/sphenix/lustre01/sphnxpro/physics/MVTX/calib/calib_mvtx3-00072324-0000.evt
+	/sphenix/lustre01/sphnxpro/physics/MVTX/calib/calib_mvtx4-00072324-0000.evt
+	/sphenix/lustre01/sphnxpro/physics/MVTX/calib/calib_mvtx5-00072324-0000.evt
+	```
+	You can check the files for other run numbers in the same directory [1].
+
+1. Compile the codes 
+	```bash
+	cd threshold-tools/cpp
+	make
+	```
+	This will generate two executables: `thrsana` and `file-merger`. Only `thrsana` is needed for the threshold scan analysis.  
+
+2. Run and submit the analysis jobs (via condor)
+	- Navigate to the `condor` directory, you should see a python script `createfilelist.py` which creates/overwrites the condor argument file `queue.list` with the run number to be analyzed 
+	- Change the run number to analyze in `createfilelist.py` by the following command
+	```bash
+	sed -i 's/^runs *= *\[[0-9]\+\]/runs = [RUN_NUMBER]/' createfilelist.py # replace RUN_NUMBER to the desired run number
+	```
+	- Run `createfilelist.py` to generate or update the `queue.list` file
+	```bash
+	python createfilelist.py
+	```
+	- Confirm that `queue.list` has the correct lines for the run number. For example, if run 72324 is to be analyzed, `queue.list` should contain the line:
+	```
+	2001 /sphenix/lustre01/sphnxpro/physics/MVTX/calib/calib_mvtx0-00072324-0000.evt 3 Calib_00072324_0000_FEEID3
+	2001 /sphenix/lustre01/sphnxpro/physics/MVTX/calib/calib_mvtx0-00072324-0000.evt 4 Calib_00072324_0000_FEEID4
+	2001 /sphenix/lustre01/sphnxpro/physics/MVTX/calib/calib_mvtx0-00072324-0000.evt 259 Calib_00072324_0000_FEEID259
+	2001 /sphenix/lustre01/sphnxpro/physics/MVTX/calib/calib_mvtx0-00072324-0000.evt 260 Calib_00072324_0000_FEEID260
+	2001 /sphenix/lustre01/sphnxpro/physics/MVTX/calib/calib_mvtx0-00072324-0000.evt 515 Calib_00072324_0000_FEEID515
+	```
+	- submit the condor jobs by
+	```bash
+	condor_submit condor.job
+	```
+	A total of 144 jobs should be submitted.
+	- Once the condor jobs are complete, you can find the output .dat files under the `threshold-tools/cpp/output/[RUN_NUMBER]` directory. Each FEE ID has 2 .dat files, `Calib_000[RUN_NUMBER]_0000_FEEID[FEE_ID]_thrs.dat` and `Calib_000[RUN_NUMBER]_0000_FEEID[FEE_ID]_rmss.dat`
+
+3. Make analysis plots. under `threshold-tools/cpp`, 3 scripts/macros are used:
+	- `thrana_plots.py`: this script takes .dat files, produces threshold/RMS plots for each pulsed pixel, computes average threshold/RMS per chip and stave
+	- `plotMvtxThresholds.C`: plots stave average threshold and RMS as 2D heatmaps
+	- `MvtxThreshold_TimeSeries.C`: generates time series plots for threshold/RMS across runs. Skip runs using hardcoded filters like:
+	```
+	// conditions to skip
+    if ((run_number == "67472" && (mvtx_id == 3)) // skip mvtx_id 3 for run 67472
+	...
+    || (run_number == "71526") // skip run 71526 fully (since we have run 71528)
+    || (run_number == "71527") // skip run 71527 fully (since we have run 71528)
+    || (run_number == "71790") // skip run 71528 fully (since we have run 71529)
+    || (run_number == "71792") // skip run 71792 fully (since we have run 71793)
+    || (run_number == "71793") // skip run 71793 fully
+    || (run_number == "71877") // skip run 71877 fully
+    || (run_number == "71878") // skip run 71878 fully
+    || (run_number == "71879") // skip run 71879 fully (since we have run 71880)
+    || (run_number == "72011") // skip run 72011 fully
+    || (run_number == "72012") // skip run 72012 fully
+    || (run_number == "72013") // skip run 72013 fully
+    || (run_number == "72014") // skip run 72014 fully
+    || (run_number == "72015") // skip run 72015 fully
+    || (run_number == "72321") // skip run 72321 fully
+    || (run_number == "72324") // skip run 72324 fully
+    )
+    {
+        continue;
+    }
+	```
+
+	A bash script `run_analysis.sh` does everything in one shot
+	```bash
+	./run_analysis.sh [RUN_NUMBER]
+	```
+	The result plots will be produced under `threshold-tools/cpp/results`. The script also sends the results to the webpage https://sphenix-intra.sdcc.bnl.gov/WWW/subsystem/mvtx/Run2025/ThresholdScan/
+
+For issues or questions regarding the threshold scan analysis, please contact Hao-Ren Jheng (hrjheng@mit.edu, or via Mattermost). 
+
+[1] If needed, I have a handy bash script that locates PRDF files by run number, subsystem, and run type. Reach out if you’re interested.
+
+---
+
 ## Building the package
 
 A package should be built before running the scripts, or remove any mention of these packages in the Fun4All macros so you can just process the data. 
