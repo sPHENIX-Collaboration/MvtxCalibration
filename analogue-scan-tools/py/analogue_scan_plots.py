@@ -5,6 +5,7 @@ import sys
 
 import matplotlib.pyplot as plt
 import numpy as np
+import json
 
 stave_map = {
     "0": ["L0_03", "L0_04", "L2_01", "L2_02", "L0_05", "L2_03", "L2_04", "L2_15"],
@@ -48,6 +49,34 @@ def read_stave_data(staveid, data_directory):
 
         fin.close()
     return data_scan
+
+
+n_dead_pixels_felix = 0
+
+
+def get_dead_pixels(stave, stave_data, dead_pixels_dict):
+    global n_dead_pixels_felix
+    n_dead_pixels_stave = 0
+    # print(f"Dead pixels for stave: {stave}")
+    for chip in range(0, stave_data.shape[0]):
+        # convert nan entries to zero for each chip
+        nan_entries_to_zero = np.nan_to_num(stave_data[chip], nan=0.0)
+        dead_pixels_coords = np.argwhere(nan_entries_to_zero == 0).tolist()
+        n_dead_pixels_chip = len(dead_pixels_coords)
+
+        if n_dead_pixels_chip:
+            dead_pixels_dict.setdefault(stave, {})
+            dead_pixels_dict[stave][chip] = dead_pixels_coords
+
+        n_dead_pixels_stave += n_dead_pixels_chip
+        print(
+            f"chip: {chip} -> {n_dead_pixels_chip}"
+        )
+
+    print(f"Total number of dead pixels for stave: {stave} -> {n_dead_pixels_stave}")
+    n_dead_pixels_felix += n_dead_pixels_stave
+
+    return
 
 
 def get_stave_ids(felix_number):
@@ -96,6 +125,8 @@ if __name__ == "__main__":
 
     all_avg = {}  # Dictionary to store average thresholds for each stave
     all_std = {}  # Dictionary to store standard deviation of thresholds for each stave
+    dead_pixels_dict = {}  # Dictionary to store dead pixels
+
     for stave in staveids:
         stave_data = read_stave_data(stave, args.d)
         print(f"Processing stave {stave} with data shape {stave_data.shape}.")
@@ -106,13 +137,12 @@ if __name__ == "__main__":
             or stave_data.shape[2] != 1024
         ):
             print(
-                (
-                    f"Error: data for stave {stave} has an unexpected shape {stave_data.shape}."
-                    + " Expected (9, 512, 1024)."
-                )
+                f"Error: data for stave {stave} has an unexpected shape {stave_data.shape}."
+                f" Expected (9, 512, 1024)."
             )
             exit(1)
 
+        get_dead_pixels(stave, stave_data, dead_pixels_dict)
         # initialize arrays for average and standard deviation
         avg_chip = np.zeros(
             (9,), dtype=float
@@ -212,6 +242,12 @@ if __name__ == "__main__":
             f.write(f"{stave}: {mean_thr:.2f} e$^-$ $\\pm$ {std_thr:.2f} e$^-$\n")
 
     print(f"Efficincy plots saved to {eff_file}")
+
+    # save dead pixels list
+    with open(f"{args.o}/dead_pixels_flx{args.felix}.json", 'w') as f:
+        json.dump(dead_pixels_dict, f)
+
+    print(f"Number of bad pixels for felix: {args.felix} {n_dead_pixels_felix}")
 
     sys.exit(0)
 # End of script
