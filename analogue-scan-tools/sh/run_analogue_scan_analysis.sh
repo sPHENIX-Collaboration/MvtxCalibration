@@ -15,10 +15,11 @@ echo "Timestamp for run $RUNNUMBER: $TIMESTAMP"
 # create the results directory if it does not exist
 OUTDIR=./results/${RUNNUMBER}_${TIMESTAMP}
 echo "Output directory: $OUTDIR"
+mkdir -p "$OUTDIR"
 
 thisScriptPath="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]:-0}")")" && pwd)"
 for i in {0..5}; do
-    python "$thisScriptPath"/../py/analogue_scan_plots.py --felix "$i" -d ./Run"$RUNNUMBER"/MVTX_FLX"$i"/ -o "$OUTDIR"
+    { time python "$thisScriptPath"/../py/analogue_scan_plots.py --felix "$i" -d ./Run"$RUNNUMBER"/MVTX_FLX"$i"/ -o "$OUTDIR"; } 2>&1 | tee "$OUTDIR/analogue_scan_ana_FLX$i".log
 done
 
 # cd into the results directory and merge the pdf files

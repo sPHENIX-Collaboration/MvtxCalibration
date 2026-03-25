@@ -61,7 +61,9 @@ def get_dead_pixels(stave, stave_data, dead_pixels_dict):
     for chip in range(0, stave_data.shape[0]):
         # convert nan entries to zero for each chip
         nan_entries_to_zero = np.nan_to_num(stave_data[chip], nan=0.0)
-        dead_pixels_coords = np.argwhere(nan_entries_to_zero == 0).tolist()
+        # swap px coords from row,col to col,row(sPHENIX CDB entry format)
+        dead_pixels_coords = [[col, row] for row, col in np.argwhere(nan_entries_to_zero == 0).tolist()]
+
         n_dead_pixels_chip = len(dead_pixels_coords)
 
         if n_dead_pixels_chip:
